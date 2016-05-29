@@ -12,6 +12,10 @@ import requests
 from starwars_api import settings
 from starwars_api.exceptions import SWAPIClientError
 
+# import settings
+# class SWAPIClientError(Exception):
+#     pass
+
 
 class SWAPIClient(object):
     GET_TIMEOUT = 30

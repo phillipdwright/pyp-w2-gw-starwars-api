@@ -60,3 +60,9 @@ target/
 
 #Ipython Notebook
 .ipynb_checkpoints
+
+# Cloud9
+.~c9*
+
+# Virtualenvs
+virtualenvs/
