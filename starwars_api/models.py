@@ -40,10 +40,17 @@ class People(BaseModel):
         super(People, self).__init__(json_data)
 
     def __repr__(self):
-        try:
-            return 'Person: {0}'.format(self.name)
-        except UnicodeEncodeError:
-            return 'Person: {0}'.format(self.url)
+        # Thanks to group 4 for the encoding fix in this method!
+        self.name = self.name.encode('utf8', 'ignore')
+        return 'Person: {0}'.format(self.name)
+    
+    def get_appearances(self):
+        """
+        Returns a FilmsQuerySet object representing the films in which this
+        character appears.
+        """
+        appearances = self.films
+        return FilmsQuerySet(appearances)
 
 
 class Films(BaseModel):
@@ -58,7 +65,7 @@ class Films(BaseModel):
 
 class BaseQuerySet(object):
 
-    def __init__(self):
+    def __init__(self, subset):
         self.objects = []
         self.total = 0
         retrieve = models[self.RESOURCE_NAME]['retrieval_method']
@@ -67,7 +74,11 @@ class BaseQuerySet(object):
         results = data['results']
         while results:
             next_obj = models[self.RESOURCE_NAME]['model'](results.pop(0))
-            self.objects.append(next_obj)
+            if subset:
+                if next_obj.url in subset:
+                    self.objects.append(next_obj)
+            else:
+                self.objects.append(next_obj)
             self.total += 1
             # If we run out of results and there is a next page
             if not results and data['next']:
@@ -99,8 +110,8 @@ class BaseQuerySet(object):
 class PeopleQuerySet(BaseQuerySet):
     RESOURCE_NAME = 'people'
 
-    def __init__(self):
-        super(PeopleQuerySet, self).__init__()
+    def __init__(self, subset=[]):
+        super(PeopleQuerySet, self).__init__(subset)
 
     def __repr__(self):
         return 'PeopleQuerySet: {0} objects'.format(str(len(self.objects)))
@@ -109,11 +120,12 @@ class PeopleQuerySet(BaseQuerySet):
 class FilmsQuerySet(BaseQuerySet):
     RESOURCE_NAME = 'films'
 
-    def __init__(self):
-        super(FilmsQuerySet, self).__init__()
+    def __init__(self, subset=[]):
+        super(FilmsQuerySet, self).__init__(subset)
 
     def __repr__(self):
         return 'FilmsQuerySet: {0} objects'.format(str(len(self.objects)))
+
 
 models = {
     'people': {
@@ -127,3 +139,9 @@ models = {
         'model': Films 
     }
 }
+
+
+luke = People.get(1)
+luke_films = luke.get_appearances()
+for film in luke_films:
+    print(film)
