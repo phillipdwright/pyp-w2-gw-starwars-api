@@ -46,3 +46,23 @@ class PeopleQuerySetTestCase(BaseStarWarsAPITestCase):
     def test_people_qs_count(self):
         qs = People.all()
         self.assertEqual(qs.count(), 15)
+
+
+class FilmsQuerySetTestCase(BaseStarWarsAPITestCase):
+
+    @responses.activate
+    def test_films_qs_next(self):
+        qs = Films.all()
+        obj = qs.next()
+        self.assertTrue(isinstance(obj, Films))
+        self.assertEqual(obj.title, 'A New Hope')
+
+    @responses.activate
+    def test_films_qs_iterable(self):
+        qs = Films.all()
+        self.assertEqual(len([elem for elem in qs]), 7)
+
+    @responses.activate
+    def test_films_qs_count(self):
+        qs = Films.all()
+        self.assertEqual(qs.count(), 7)
